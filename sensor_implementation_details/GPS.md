@@ -15,3 +15,9 @@ Library we need: pynmea2
 
 https://github.com/Knio/pynmea2
 
+Datasheet:
+
+
+https://www.digikey.com/htmldatasheets/production/2757457/0/0/1/neo-6.html
+
+Address: unknown (`0x42`?), shouldn't matter

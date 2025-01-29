@@ -189,3 +189,8 @@ while True :
 ```
 
 I anticipate the messages to contain data like "1,2,3,,s,d,6" with predefined settings for parameters, although this is a bit of a task
+
+
+Wiring:
+
+https://circuitdigest.com/microcontroller-projects/raspberry-pi-with-lora-peer-to-peer-communication-with-arduino
