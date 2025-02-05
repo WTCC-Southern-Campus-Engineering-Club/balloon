@@ -33,17 +33,18 @@ MAINLOOP_SLEEP = 2
 
 
 def result_callback(future: asyncio.Task) -> None:
+    result_logger = logging.getLogger("balloon.result")
     sensor_id = future.get_name()  # Get task name (= sensor id)
     sensor = SENSORS[sensor_id]
     sensor.running.release()  # Release the lock
     sensor.last_time_finished = time.time()  # Update last_time_finished
     try:
         result = future.result()
-        logger.debug(f"Received data {result} from sensor {sensor.name!r}.")
+        result_logger.debug(f"Received data {result} from sensor {sensor.name!r}.")
         sensor.consecutive_failures = 0
         save_datapoint(datapoint=DataPoint(**result)) # Save the data
     except Exception as e:
-        logger.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
+        result.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
                      f" \n EXC INFO: {traceback.format_exc()}")
         sensor.consecutive_failures += 1
 
@@ -64,7 +65,7 @@ async def mainloop() -> None:
 
             not_currently_checking = not sensor.running.locked()
 
-            logger.debug(f"Sensor id={sensor.id} on check: time_passed={current_time - sensor.last_time_finished},"
+            logger.debug(f"Sensor id={sensor.id!r} on check: time_passed={current_time - sensor.last_time_finished},"
                          f" time_required={sensor.cooldown * (2 ** sensor.consecutive_failures)},"
                          f" consecutive_failures={sensor.consecutive_failures},"
                          f" enough_time_passed={enough_time_passed}, sensor_enabled={sensor_is_enabled},"
@@ -75,7 +76,7 @@ async def mainloop() -> None:
                 await sensor.running.acquire()
                 running_tasks[sensor.id] = asyncio.create_task(sensor.poll(), name=sensor.id)
                 running_tasks[sensor.id].add_done_callback(result_callback)
-                logger.debug(f"Successfully started task {sensor.poll} for sensor id={sensor.id}")
+                logger.debug(f"Successfully started task {sensor.__class__.__name__}.poll() for sensor id={sensor.id!r}")
 
 
         logger.debug(f"Mainloop is now sleeping for {MAINLOOP_SLEEP} seconds")
