@@ -15,8 +15,8 @@ class Sensor:
     # Attributes set during runtime by mainloop
     running: asyncio.Lock = asyncio.Lock()  # Whether the sensor is currently being polled
     disabled: bool = False  # Whether the sensor has been disabled in software
-    last_time_started: int = -1  # Last time the sensor poll started
-    last_time_finished: int = -1  # Last time the sensor poll finished
+    last_time_started: float = -1  # Last time the sensor poll started
+    last_time_finished: float = -1  # Last time the sensor poll finished
     consecutive_failures: int = 0  # Number of consecutive failures (exponential backoff)
 
     def __init__(self):

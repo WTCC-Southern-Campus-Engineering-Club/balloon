@@ -4,6 +4,7 @@ import asyncio
 import functools
 import sys
 import time
+import traceback
 
 import Sensor
 import logging
@@ -33,9 +34,20 @@ MAINLOOP_SLEEP = 2
 
 def result_callback(future: asyncio.Task) -> None:
     sensor_id = future.get_name()  # Get task name (= sensor id)
-    SENSORS[sensor_id].running.release()  # Release the lock
-    SENSORS[sensor_id].last_time_finished = time.time()  # Update last_time_finished
-    save_datapoint(datapoint=DataPoint(**future.result())) # Save the data
+    sensor = SENSORS[sensor_id]
+    sensor.running.release()  # Release the lock
+    sensor.last_time_finished = time.time()  # Update last_time_finished
+    try:
+        result = future.result()
+        logger.debug(f"Received data {result} from sensor {sensor.name!r}.")
+        sensor.consecutive_failures = 0
+        save_datapoint(datapoint=DataPoint(**result)) # Save the data
+    except Exception as e:
+        logger.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
+                     f" \n EXC INFO: {traceback.format_exc()}")
+        sensor.consecutive_failures += 1
+
+
 
 
 async def mainloop() -> None:
@@ -54,6 +66,7 @@ async def mainloop() -> None:
 
             logger.debug(f"Sensor id={sensor.id} on check: time_passed={current_time - sensor.last_time_finished},"
                          f" time_required={sensor.cooldown * (2 ** sensor.consecutive_failures)},"
+                         f" consecutive_failures={sensor.consecutive_failures},"
                          f" enough_time_passed={enough_time_passed}, sensor_enabled={sensor_is_enabled},"
                          f" running={not not_currently_checking}")
 
@@ -65,9 +78,6 @@ async def mainloop() -> None:
                 logger.debug(f"Successfully started task {sensor.poll} for sensor id={sensor.id}")
 
 
-
-
-
         logger.debug(f"Mainloop is now sleeping for {MAINLOOP_SLEEP} seconds")
         await asyncio.sleep(MAINLOOP_SLEEP)  # Take a break
 
@@ -75,4 +85,7 @@ async def mainloop() -> None:
 # Mainloop
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(mainloop())
+    try:
+        loop.run_until_complete(mainloop())
+    except KeyboardInterrupt:
+        logger.critical("Interrupted by user.")
