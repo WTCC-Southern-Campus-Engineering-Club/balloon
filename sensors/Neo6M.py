@@ -24,6 +24,9 @@ class Neo6M(Sensor):
          attributes and connections necessary to interface with the sensor
         :return: None
         """
+        self.port = "/dev/ttyAMA0"
+        self.serial = serial.Serial(self.port, baudrate=9600, timeout=0.5)
+        self.reader = pynmea2.NMEAStreamReader()
         super().__init__()
 
 
@@ -35,15 +38,14 @@ class Neo6M(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
-        port = "/dev/ttyAMA0"
-        ser = serial.Serial(port, baudrate=9600, timeout=0.5)
-        dataout = pynmea2.NMEAStreamReader()
-        newdata = ser.readline()
 
-        if newdata[0:6] == "$GPRMC":
-            newmsg = pynmea2.parse(newdata)
-            lat = newmsg.latitude
-            lng = newmsg.longitude
-            return {"latitude": lat, "longitude": lng}
+        while True:
+            newdata = self.serial.readlines()
+            for line in newdata:
+                if line[0:6] == "$GPRMC":
+                    newmsg = pynmea2.parse(line)
+                    lat = newmsg.latitude
+                    lng = newmsg.longitude
+                    return {"latitude": lat, "longitude": lng}
 
 
