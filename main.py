@@ -12,7 +12,7 @@ import logging
 import SleepySensor
 import formatter
 from database import DataPoint, save_datapoint
-
+from sensors.Neo6M import Neo6M
 
 # Configure root logger
 root_logger = logging.getLogger("root")
@@ -28,7 +28,7 @@ ch.setFormatter(formatter.Formatter())  # custom formatter
 root_logger.handlers = [ch]  # Make sure to not double print
 logger = logging.getLogger("balloon.main")
 
-SENSORS: dict[str, Sensor.Sensor] = {"sleepy": SleepySensor.SleepySensor()}
+SENSORS: dict[str, Sensor.Sensor] = {"sleepy": SleepySensor.SleepySensor(), "gps": Neo6M()}
 MAINLOOP_SLEEP = 2
 
 
@@ -44,7 +44,7 @@ def result_callback(future: asyncio.Task) -> None:
         sensor.consecutive_failures = 0
         save_datapoint(datapoint=DataPoint(**result)) # Save the data
     except Exception as e:
-        result.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
+        result_logger.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
                      f" \n EXC INFO: {traceback.format_exc()}")
         sensor.consecutive_failures += 1
 
@@ -72,12 +72,13 @@ async def mainloop() -> None:
                          f" running={not not_currently_checking}")
 
             if enough_time_passed and sensor_is_enabled and not_currently_checking:
-                logger.debug(f"Final decision on sensor id={sensor.id}: Run mainloop again")
+                logger.debug(f"Final decision on sensor id={sensor.id!r}: Start sensor polling.")
                 await sensor.running.acquire()
                 running_tasks[sensor.id] = asyncio.create_task(sensor.poll(), name=sensor.id)
                 running_tasks[sensor.id].add_done_callback(result_callback)
                 logger.debug(f"Successfully started task {sensor.__class__.__name__}.poll() for sensor id={sensor.id!r}")
 
+            logger.debug(f"Final decision on sensor id={sensor.id!r}: Ignore this sensor.")
 
         logger.debug(f"Mainloop is now sleeping for {MAINLOOP_SLEEP} seconds")
         await asyncio.sleep(MAINLOOP_SLEEP)  # Take a break

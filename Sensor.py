@@ -22,7 +22,7 @@ class Sensor:
     def __init__(self):
         """
         Sensors use this function to create all necessary
-         attributes and connections necessary to interface with the sensor
+        attributes and connections necessary to interface with the sensor
         :return: None
         """
         self.logger = logging.getLogger(f"balloon.sensors.{self.__class__.__name__}")
@@ -32,7 +32,7 @@ class Sensor:
     async def poll(self) -> dict[str, int | float]:
         """
         Poll the sensor for data, and return a dictionary of the data. If this function fails,
-         the sensor will be marked as "damaged" using exponential falloff
+     the sensor will be marked as "damaged" using exponential falloff
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
