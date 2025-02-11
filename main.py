@@ -12,6 +12,7 @@ import logging
 import SleepySensor
 import formatter
 from database import DataPoint, save_datapoint
+from sensors.BME280 import BME280
 from sensors.Neo6M import Neo6M
 
 # Configure root logger
@@ -28,7 +29,7 @@ ch.setFormatter(formatter.Formatter())  # custom formatter
 root_logger.handlers = [ch]  # Make sure to not double print
 logger = logging.getLogger("balloon.main")
 
-SENSORS: dict[str, Sensor.Sensor] = {"sleepy": SleepySensor.SleepySensor(), "gps": Neo6M()}
+SENSORS: dict[str, Sensor.Sensor] = {"sleepy": SleepySensor.SleepySensor(), "bme280": BME280()}
 MAINLOOP_SLEEP = 2
 
 
@@ -77,8 +78,8 @@ async def mainloop() -> None:
                 running_tasks[sensor.id] = asyncio.create_task(sensor.poll(), name=sensor.id)
                 running_tasks[sensor.id].add_done_callback(result_callback)
                 logger.debug(f"Successfully started task {sensor.__class__.__name__}.poll() for sensor id={sensor.id!r}")
-
-            logger.debug(f"Final decision on sensor id={sensor.id!r}: Ignore this sensor.")
+            else:
+                logger.debug(f"Final decision on sensor id={sensor.id!r}: Ignore this sensor.")
 
         logger.debug(f"Mainloop is now sleeping for {MAINLOOP_SLEEP} seconds")
         await asyncio.sleep(MAINLOOP_SLEEP)  # Take a break
