@@ -24,8 +24,16 @@ class BME280(Sensor):
         :return: None
         """
         self.bus = SMBus(1)
+        self.qnh = 1054.44149  # can recalculate
         self.sensor = bme280.BME280(i2c_addr=0x76, i2c_dev=self.bus)
         super().__init__()
+
+        for i in range(10):
+            self.sensor.get_temperature()  # get the sensor ready
+            self.sensor.get_pressure()
+            self.sensor.get_humidity()
+            self.sensor.get_altitude()
+
 
 
 
@@ -38,5 +46,5 @@ class BME280(Sensor):
         """
 
         return {"temperature": self.sensor.get_temperature(), "pressure": self.sensor.get_pressure(),
-                "humidity": self.sensor.get_humidity(), "bme-altitude": self.sensor.get_altitude()}
+                "humidity": self.sensor.get_humidity(), "bme-altitude": self.sensor.get_altitude(qnh=self.qnh)}
 
