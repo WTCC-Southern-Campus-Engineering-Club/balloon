@@ -41,13 +41,16 @@ def result_callback(future: asyncio.Task) -> None:
     sensor.last_time_finished = time.time()  # Update last_time_finished
     try:
         result = future.result()
+        if result is None:  # This means that the sensor failed
+            raise Exception("Sensor result is None")
+
         result_logger.debug(f"Received data {result} from sensor {sensor.name!r}.")
-        sensor.consecutive_failures = 0
+        sensor.consecutive_failures = 0  # Reset consecutive failures
         save_datapoint(datapoint=DataPoint(**result)) # Save the data
     except Exception as e:
         result_logger.error(f"Failed to successfully execute poll for sensor {sensor.name!r} - {e} encountered."
                      f" \n EXC INFO: {traceback.format_exc()}")
-        sensor.consecutive_failures += 1
+        sensor.consecutive_failures += 1  # Increment failures
 
 
 

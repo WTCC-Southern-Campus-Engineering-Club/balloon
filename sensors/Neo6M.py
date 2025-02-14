@@ -34,7 +34,7 @@ class Neo6M(Sensor):
 
 
 
-    async def poll(self) -> dict[str, int | float]:
+    async def poll(self) -> dict[str, int | float] | None:
         """
         Poll the sensor for data, and return a dictionary of the data. If this function fails,
          the sensor will be marked as "damaged" using exponential falloff
