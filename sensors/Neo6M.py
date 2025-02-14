@@ -44,22 +44,20 @@ class Neo6M(Sensor):
 
         while True:
             try:
-                lines = list(self.sio.readlines())
-                self.logger.critical(lines)
-                for line in lines:
-                    try:
-                        msg = pynmea2.parse(line)
-                        data = msg.data
-                        self.logger.critical(repr(msg))
-                        self.logger.critical(data)
-                        if "lat" in data and "lon" in data and "altitude" in data:
-                            return {"latitude": data["lat"], "longitude": data["lon"], "altitude": data["altitude"]}
+                line = self.sio.readline()
+                msg = pynmea2.parse(line)
+                data = msg.data
+                self.logger.critical(repr(msg))
+                self.logger.critical(data)
+                if "lat" in data and "lon" in data and "altitude" in data:
+                    return {"latitude": data["lat"], "longitude": data["lon"], "altitude": data["altitude"]}
 
-                    except pynmea2.ParseError:
-                        self.logger.critical(f'Trying to parse data {line!r} error: {traceback.format_exc()}')
-                        continue
+            except pynmea2.ParseError:
+                self.logger.critical(f'Trying to parse data {line!r} error: {traceback.format_exc()}')
+                continue
             except serial.SerialException:
                 self.logger.critical(f'Failed to read: device error: {traceback.format_exc()}')
                 break
+        return None  # None value indicates failure to read device
 
 
