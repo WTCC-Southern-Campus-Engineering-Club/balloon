@@ -44,7 +44,7 @@ class Neo6M(Sensor):
 
         while True:
             try:
-                lines = self.sio.readlines()
+                lines = list(self.sio.readlines())
                 self.logger.critical(lines)
                 for line in lines:
                     try:
