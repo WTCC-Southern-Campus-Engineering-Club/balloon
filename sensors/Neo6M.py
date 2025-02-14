@@ -50,6 +50,7 @@ class Neo6M(Sensor):
                         msg = pynmea2.parse(line)
                         data = msg.data
                         self.logger.critical(repr(msg))
+                        self.logger.critical(data)
                         if "lat" in data and "lon" in data and "altitude" in data:
                             return {"latitude": data["lat"], "longitude": data["lon"], "altitude": data["altitude"]}
 
