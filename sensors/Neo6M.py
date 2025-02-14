@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 from random import randint
 
 import pynmea2
@@ -26,6 +27,7 @@ class Neo6M(Sensor):
         """
         self.port = "/dev/ttyAMA0"
         self.serial = serial.Serial(self.port, baudrate=9600, timeout=0.5)
+        self.sio = io.TextIOWrapper(io.BufferedRWPair(self.serial, self.serial))
         self.reader = pynmea2.NMEAStreamReader()
         super().__init__()
 
@@ -39,10 +41,16 @@ class Neo6M(Sensor):
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
 
-        newdata = self.serial.readlines()
-        for line in newdata:
-            parsed = pynmea2.parse(line)
-            print(parsed.data)
-
-
+        while 1:
+            try:
+                line = self.sio.readline()
+                msg = pynmea2.parse(line)
+                self.logger.critical(repr(msg))
+            except serial.SerialException as e:
+                self.logger.critical('Device error: {}'.format(e))
+                break
+            except pynmea2.ParseError as e:
+                self.logger.critical('Parse error: {}'.format(e))
+                continue
+        return {"finished": 1}
 
