@@ -2,7 +2,7 @@
 
 
 # GY-271 (Magnetometer)
-py_qmc5883l @ https://github.com/RigacciOrg/py-qmc5883l
+# we implement the class
 smbus2 # = python-smbus
 
 
@@ -14,15 +14,6 @@ LoraRF  # Must enable 'dtparam=spi=on' in boot params
 pynmea2  # Parse NMEA messages
 pyserial  # To interface with hardware, as pynmea2 doesn't provide this functionality
 
-
-# DS18S20 (temperature)
-w1thermsensor  # Handles everything (must add 'dtoverlay=w1-gpio' for regular connection, 'dtoverlay=w1-gpio,gpiopin=x' for gpio pin x
-
-
-# BMP180
-
-bmp180 @ https://github.com/Tijndagamer/bmp180.git  # We don't actually need this, can use other code
-# smbus2 is also needed
 
 # BME280
 pimoroni-bme280  # Actual interface
