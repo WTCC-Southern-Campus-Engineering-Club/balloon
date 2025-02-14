@@ -46,7 +46,7 @@ class Neo6M(Sensor):
             try:
                 line = self.sio.readline()
                 msg = pynmea2.parse(line)
-                if msg.sensor == "GGA":  # Only type that contains lat, long, and alt
+                if msg.sentence_type == "GGA":  # Only type that contains lat, long, and alt
                     return {"latitude": msg.alt, "longitude": msg.lon, "altitude": msg.altitude}
 
             except pynmea2.ParseError:
