@@ -6,14 +6,12 @@ import sys
 import time
 import traceback
 
-import Sensor
 import logging
 
-import SleepySensor
 import formatter
+from constants import *
 from database import DataPoint, save_datapoint
-from sensors.BME280 import BME280
-from sensors.Neo6M import Neo6M
+
 
 # Configure root logger
 root_logger = logging.getLogger("root")
@@ -29,8 +27,8 @@ ch.setFormatter(formatter.Formatter())  # custom formatter
 root_logger.handlers = [ch]  # Make sure to not double print
 logger = logging.getLogger("balloon.main")
 
-SENSORS: dict[str, Sensor.Sensor] = {"sleepy": SleepySensor.SleepySensor(), "bme280": BME280()}
 MAINLOOP_SLEEP = 2
+
 
 
 def result_callback(future: asyncio.Task) -> None:
