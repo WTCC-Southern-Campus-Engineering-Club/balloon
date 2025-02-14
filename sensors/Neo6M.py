@@ -45,6 +45,7 @@ class Neo6M(Sensor):
         while True:
             try:
                 lines = self.sio.readlines()
+                self.logger.critical(lines)
                 for line in lines:
                     try:
                         msg = pynmea2.parse(line)
