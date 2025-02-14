@@ -46,11 +46,10 @@ class Neo6M(Sensor):
             try:
                 line = self.sio.readline()
                 msg = pynmea2.parse(line)
-                data = msg.data
+                fields = msg.fields
                 self.logger.critical(repr(msg))
-                self.logger.critical(data)
-                if "lat" in data and "lon" in data and "altitude" in data:
-                    return {"latitude": data["lat"], "longitude": data["lon"], "altitude": data["altitude"]}
+                if "lat" in fields and "lon" in fields and "altitude" in fields:
+                    return {"latitude": msg.alt, "longitude": msg.lon, "altitude": msg.altitude}
 
             except pynmea2.ParseError:
                 self.logger.critical(f'Trying to parse data {line!r} error: {traceback.format_exc()}')
