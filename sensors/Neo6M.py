@@ -47,7 +47,9 @@ class Neo6M(Sensor):
                 line = self.sio.readline()
                 msg = pynmea2.parse(line)
                 if msg.sentence_type == "GGA":  # Only type that contains lat, long, and alt
-                    return {"latitude": msg.lat, "longitude": msg.lon, "altitude": msg.altitude}
+
+                    # .latitude and .longitude function as helpers
+                    return {"latitude": msg.latitude, "longitude": msg.longitude, "altitude": msg.altitude}
 
             except pynmea2.ParseError:
                 self.logger.critical(f'Trying to parse data {line!r} error: {traceback.format_exc()}')
