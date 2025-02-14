@@ -27,12 +27,19 @@ class BME280(Sensor):
         self.qnh = 1054.44149  # can recalculate
         self.sensor = bme280.BME280(i2c_addr=0x76, i2c_dev=self.bus)
         super().__init__()
+        self.has_setup = False
+        self.setup()
 
-        for i in range(10):
-            self.sensor.get_temperature()  # get the sensor ready
-            self.sensor.get_pressure()
-            self.sensor.get_humidity()
-            self.sensor.get_altitude()
+    def setup(self):
+        try:
+            for i in range(10):
+                self.sensor.get_temperature()  # get the sensor ready
+                self.sensor.get_pressure()
+                self.sensor.get_humidity()
+                self.sensor.get_altitude()
+            self.has_setup = True
+        except RuntimeError:
+            return  # Doesn't matter
 
 
 
@@ -44,6 +51,10 @@ class BME280(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
+        if not self.has_setup:
+            self.setup()
+            if not self.has_setup:  # Setup failed
+                return None  # None indicates failure to read
 
         return {"temperature": self.sensor.get_temperature(), "pressure": self.sensor.get_pressure(),
                 "humidity": self.sensor.get_humidity(), "bme-altitude": self.sensor.get_altitude(qnh=self.qnh)}
