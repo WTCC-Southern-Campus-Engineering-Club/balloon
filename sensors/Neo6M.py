@@ -39,13 +39,10 @@ class Neo6M(Sensor):
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
 
-        while True:
-            newdata = self.serial.readlines()
-            for line in newdata:
-                if line[0:6] == "$GPRMC":
-                    newmsg = pynmea2.parse(line)
-                    lat = newmsg.latitude
-                    lng = newmsg.longitude
-                    return {"latitude": lat, "longitude": lng}
+        newdata = self.serial.readlines()
+        for line in newdata:
+            parsed = pynmea2.parse(line)
+            print(parsed.data)
+
 
 
