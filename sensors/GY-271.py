@@ -252,6 +252,7 @@ class GY271(Sensor):
          attributes and connections necessary to interface with the sensor
         :return: None
         """
+        super().__init__()
         self.bus = 1
         self.address = 0x0d
         try:
@@ -259,7 +260,6 @@ class GY271(Sensor):
         except OSError:
             self.sensor = None
             self.logger.critical("Can't initialize QMC5883L sensor. This is not a critical error.")
-        super().__init__()
 
 
 
