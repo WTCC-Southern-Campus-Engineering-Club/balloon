@@ -10,7 +10,11 @@ import pynmea2
 from Sensor import Sensor
 import serial
 
-current_satellites = None
+total_satellites = None
+satellites_in_use = None
+
+ground_speed_kts = None
+heading = None
 
 
 class Neo6M_GPS(Sensor):
@@ -45,7 +49,12 @@ class Neo6M_GPS(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
-        global current_satellites
+        global total_satellites
+        global satellites_in_use
+
+        global ground_speed_kts
+        global heading
+
         while True:
             try:
                 line = self.sio.readline()
@@ -54,9 +63,13 @@ class Neo6M_GPS(Sensor):
                     break
                 msg = pynmea2.parse(line)
                 if msg.sentence_type == "GSV":  # satellites
-                    current_satellites = msg.num_sv_in_view
-                if msg.sentence_type == "GGA":  # Only type that contains lat, long, and alt
+                    total_satellites = msg.num_sv_in_view
+                if msg.sentence_type == "RMC":
+                    ground_speed_kts = msg.spd_over_grnd
+                    heading = msg.true_course
 
+                if msg.sentence_type == "GGA":  # Only type that contains lat, long, and alt
+                    satellites_in_use = msg.num_sats
                     # .latitude and .longitude function as helpers
                     return {"latitude": msg.latitude, "longitude": msg.longitude, "altitude": msg.altitude}
 
@@ -89,7 +102,7 @@ class Neo6M_SATS(Sensor):
 
 
 
-    async def poll(self) -> dict[str, int | float] | None:
+    async def poll(self) -> dict[str, int | float | None] | None:
         """
         Poll the sensor for data, and return a dictionary of the data. If this function fails,
          the sensor will be marked as "damaged" using exponential falloff
@@ -97,6 +110,33 @@ class Neo6M_SATS(Sensor):
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
 
-        return current_satellites
+        return {"total_satellites": total_satellites, "satellites_in_use": satellites_in_use}
 
 
+class Neo6M_HEADING(Sensor):
+    # Metadata
+    id: str = "heading"  # Program ID for this sensor (e.g. bmp180)
+    name: str = "NEO6M (heading)" # Human-readable name (e.g. BMP180 Pressure/Temperature/Humidity Sensor)
+    description: str = "to return GPS heading and speed info"  # Purpose of the sensor (e.g. Read pressure, temperature, and humidity)
+    cooldown: float = 1  # How many seconds in between data polls (e.g. 7.5 seconds)
+
+
+    def __init__(self):
+        """
+        Sensors use this function to create all necessary
+         attributes and connections necessary to interface with the sensor
+        :return: None
+        """
+        super().__init__()
+
+
+
+    async def poll(self) -> dict[str, int | float | None] | None:
+        """
+        Poll the sensor for data, and return a dictionary of the data. If this function fails,
+         the sensor will be marked as "damaged" using exponential falloff
+
+        :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
+        """
+
+        return {"gps_heading": heading, "ground_speed": ground_speed_kts}
