@@ -75,12 +75,22 @@ async def mainloop() -> None:
 
             if enough_time_passed and sensor_is_enabled and not_currently_checking:
                 logger.debug(f"Final decision on sensor id={sensor.id!r}: Start sensor polling.")
-                await sensor.running.acquire()
+                await sensor.running.acquire()  # Acquire the running lock
+                # Create the tak
                 running_tasks[sensor.id] = asyncio.create_task(sensor.poll(), name=sensor.id)
+                # Add the callback for the task completion
                 running_tasks[sensor.id].add_done_callback(result_callback)
                 logger.debug(f"Successfully started task {sensor.__class__.__name__}.poll() for sensor id={sensor.id!r}")
             else:
-                logger.debug(f"Final decision on sensor id={sensor.id!r}: Ignore this sensor.")
+                reasons = []
+                if not not_currently_checking:
+                    reasons.append(f"Currently running")
+                if not enough_time_passed:
+                    reasons.append(f"Not enough time passed")
+                if not sensor_is_enabled:
+                    reasons.append(f"Not enabled")
+                logger.debug(f"Final decision on sensor id={sensor.id!r}: Ignore this sensor. Reasons:"
+                             f" {', '.join(reasons)}")
 
         logger.debug(f"Mainloop is now sleeping for {MAINLOOP_SLEEP} seconds")
         await asyncio.sleep(MAINLOOP_SLEEP)  # Take a break

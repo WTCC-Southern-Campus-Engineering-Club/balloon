@@ -23,7 +23,13 @@ class BME280(Sensor):
          attributes and connections necessary to interface with the sensor
         :return: None
         """
-        self.bus = SMBus(1)
+        bus = 1
+        try:
+            self.bus = SMBus(bus)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Failed to initialize BME280: Could not read from i2c bus {bus}. "
+                                    f"This is a critical error.")
+
         self.qnh = 1054.44149  # can recalculate
         self.sensor = bme280.BME280(i2c_addr=0x76, i2c_dev=self.bus)
         super().__init__()
