@@ -48,6 +48,9 @@ class Neo6M_GPS(Sensor):
         while True:
             try:
                 line = self.sio.readline()
+                if not line:  # Line is empty
+                    self.logger.critical(f"Failed to read: no message received.")
+                    break
                 msg = pynmea2.parse(line)
                 if msg.sentence_type == "GGA":  # Only type that contains lat, long, and alt
 
