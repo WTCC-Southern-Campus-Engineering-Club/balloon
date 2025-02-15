@@ -1,17 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Python driver for the QMC5883L 3-Axis Magnetic Sensor.
+from __future__ import annotations
 
-Usage example:
-
-  import py_qmc5883l
-  sensor = py_qmc5883l.QMC5883L()
-  m = sensor.get_magnet()
-  print(m)
-
-you will get three 16 bit signed integers, representing the values
-of the magnetic sensor on axis X, Y and Z, e.g. [-1257, 940, -4970].
-"""
 
 import logging
 import math
@@ -249,7 +237,6 @@ class QMC5883L(object):
                            doc=u'Transformation matrix to adjust (x, y) magnetic vector.')
 
 
-from __future__ import annotations
 
 import asyncio
 from random import randint
