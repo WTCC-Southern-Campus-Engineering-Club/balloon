@@ -6,12 +6,6 @@ import math
 import time
 import smbus2
 
-__author__ = "Niccolo Rigacci"
-__copyright__ = "Copyright 2018 Niccolo Rigacci <niccolo@rigacci.org>"
-__license__ = "GPLv3-or-later"
-__email__ = "niccolo@rigacci.org"
-__version__ = "0.1.4"
-
 DFLT_BUS = 1
 DFLT_ADDRESS = 0x0d
 
@@ -258,7 +252,13 @@ class GY271(Sensor):
          attributes and connections necessary to interface with the sensor
         :return: None
         """
-        self.sensor = QMC5883L(i2c_bus=1, address=0x0d)
+        self.bus = 1
+        self.address = 0x0d
+        try:
+            self.sensor = QMC5883L(i2c_bus=self.bus, address=self.address)
+        except OSError:
+            self.sensor = None
+            self.logger.critical("Can't initialize QMC5883L sensor. This is not a critical error.")
         super().__init__()
 
 
@@ -270,4 +270,8 @@ class GY271(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
+        if self.sensor is None:
+            self.logger.warning("Trying to initialize QMC5883L sensor after failed initialization.")
+            self.sensor = QMC5883L(i2c_bus=self.bus, address=self.address)
+
         return {"bearing": self.sensor.get_bearing(), "magnet-temp": self.sensor.get_temp()}

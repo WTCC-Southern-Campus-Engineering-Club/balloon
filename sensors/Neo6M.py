@@ -10,6 +10,8 @@ import pynmea2
 from Sensor import Sensor
 import serial
 
+initialized = False
+
 total_satellites = None
 satellites_in_use = None
 
@@ -31,6 +33,7 @@ class Neo6M_GPS(Sensor):
          attributes and connections necessary to interface with the sensor
         :return: None
         """
+        global initialized
         self.port = "/dev/ttyAMA0"
         try:
             self.serial = serial.Serial(self.port, baudrate=9600, timeout=0.5)
@@ -38,6 +41,7 @@ class Neo6M_GPS(Sensor):
             raise FileNotFoundError(f"Neo6M serial port ({self.port}) not found. This is a critical error.")
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.serial, self.serial))
         self.reader = pynmea2.NMEAStreamReader()
+        initialized = True
         super().__init__()
 
 
@@ -109,7 +113,8 @@ class Neo6M_SATS(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
-
+        if not initialized:
+            raise FileNotFoundError("Sensor not initialized.")
         return {"total_satellites": total_satellites, "satellites_in_use": satellites_in_use}
 
 
@@ -138,5 +143,6 @@ class Neo6M_HEADING(Sensor):
 
         :return: the data e.x. {"temperature": 34.7, "pressure": 106.4, "humidity": 0.56}
         """
-
+        if not initialized:
+            raise FileNotFoundError("Sensor not initialized.")
         return {"gps_heading": heading, "ground_speed": ground_speed_kts}
