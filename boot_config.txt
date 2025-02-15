@@ -1,0 +1,38 @@
+
+# Allow for I2C and SPI to be enabled
+dtparam=i2c_arm=on
+dtparam=spi=on
+
+# See https://github.com/RPi-Distro/pi-gen/blob/master/stage1/00-boot-files/files/config.txt for why these are included
+dtparam=audio=on
+camera_auto_detect=1
+display_auto_detect=1
+auto_initramfs=1
+dtoverlay=vc4-kms-v3d
+max_framebuffers=2
+disable_fw_kms_setup=1
+arm_64bit=1
+disable_overscan=1
+arm_boost=1
+
+
+# Disable bluetooth and wifi
+dtoverlay=disable-bt
+dtoverlay=disable-wifi  # You can comment this out if you use wifi
+
+# enable uart
+core_freq=250
+enable_uart=1
+
+
+[cm4]
+# Enable host mode on the 2711 built-in XHCI USB controller.
+# This line should be removed if the legacy DWC2 controller is required
+# (e.g. for USB device mode) or if USB support is not required.
+otg_mode=1
+
+[cm5]
+dtoverlay=dwc2,dr_mode=host
+
+[all]
+dtoverlay=w1-gpio
