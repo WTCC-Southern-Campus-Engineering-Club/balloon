@@ -48,7 +48,7 @@ class Neo6M_GPS(Sensor):
         while True:
             try:
                 line = self.sio.readline()
-                if not str(line):  # Line is empty
+                if len(line) == 0:  # Line is empty
                     self.logger.critical(f"Failed to read: no message received.")
                     break
                 msg = pynmea2.parse(line)
